@@ -331,11 +331,10 @@ class CornersProblem(search.SearchProblem):
             nextx, nexty = int(x + dx), int(y + dy)
             hitsWall = self.walls[nextx][nexty]
             if not hitsWall:
-                nonvisited = []
-                for i in state[1]:
-                    if not i == (nextx, nexty):
-                        nonvisited.append(i)
-                successors.append( ( ((nextx, nexty), tuple(nonvisited)), action, 1) )
+                newcorners = list(state[1])
+                if (nextx, nexty) in newcorners:
+                    newcorners.remove((nextx, nexty))
+                successors.append((((nextx, nexty), tuple(newcorners)), action, 1))
 
         self._expanded += 1 # DO NOT CHANGE
         return successors
@@ -372,18 +371,17 @@ def cornersHeuristic(state, problem):
 
     "*** YOUR CODE HERE ***"
     heuristic = 0
-    nonvisited  = state[1]
-    pos = state[0]
+    position, nonvisited = state
     distances = []
-
+    
     if len(nonvisited) == 0:
         return heuristic
-
+    
     for i in nonvisited:
-        d = abs(i[0] - pos[0]) + abs(i[1] - pos[1])
-        distances.append((d,i))
+        d = util.manhattanDistance(i, position)
+        distances.append((d, i))
     distances = sorted(distances, reverse = True)
-
+    
     heuristic += distances[0][0]
     return heuristic
 
@@ -480,25 +478,18 @@ def foodHeuristic(state, problem):
     position, foodGrid = state
     "*** YOUR CODE HERE ***"
     heuristic = 0
-    nonvisited = foodGrid.asList()
     distances = []
+    foodlist = foodGrid.asList()
     
-    if len(nonvisited) == 0:
+    if len(foodlist) == 0:
         return heuristic
-
-    for i in nonvisited:
-        for j in nonvisited:
-            d = mazeDistance(i, j, problem.startingGameState)
-            distances.append((d, i, j))
-    distances = sorted(distances, reverse = True)
-
-    heuristic += distances[0][0]
-    distanceTwo = []
-    distanceTwo.append(mazeDistance(distances[0][1],position, problem.startingGameState))
-    distanceTwo.append(mazeDistance(distances[0][2],position, problem.startingGameState))
-    distanceTwo = sorted(distanceTwo)
-    heuristic += distanceTwo[0]
     
+    for i in foodlist:
+        d = util.manhattanDistance(i, position)
+        distances.append((d, i))
+    distances = sorted(distances, reverse = True)
+    
+    heuristic += distances[0][0] + max(distances[0][1][0], distances[0][1][1]) 
     return heuristic
 
 class ClosestDotSearchAgent(SearchAgent):
