@@ -4,8 +4,8 @@
 # educational purposes provided that (1) you do not distribute or publish
 # solutions, (2) you retain this notice, and (3) you provide clear
 # attribution to UC Berkeley, including a link to http://ai.berkeley.edu.
-# 
-# Attribution Information: The Pacman AI projects were developed at UC Berkeley.
+#
+# Attribution Information: The Pacman AI projects were developed at UC Berkeley
 # The core projects and autograders were primarily created by John DeNero
 # (denero@cs.berkeley.edu) and Dan Klein (klein@cs.berkeley.edu).
 # Student side autograding was added by Brad Miller, Nick Hay, and
@@ -19,10 +19,12 @@ Pacman agents (in searchAgents.py).
 
 import util
 
+
 class SearchProblem:
     """
-    This class outlines the structure of a search problem, but doesn't implement
-    any of the methods (in object-oriented terminology: an abstract class).
+    This class outlines the structure of a search problem, but doesn't
+    implement any of the methods
+    (in object-oriented terminology: an abstract class).
 
     You do not need to change anything in this class, ever.
     """
@@ -70,7 +72,8 @@ def tinyMazeSearch(problem):
     from game import Directions
     s = Directions.SOUTH
     w = Directions.WEST
-    return  [s, s, w, s, w, w, s, w]
+    return [s, s, w, s, w, w, s, w]
+
 
 def depthFirstSearch(problem):
     """
@@ -87,29 +90,81 @@ def depthFirstSearch(problem):
     print "Start's successors:", problem.getSuccessors(problem.getStartState())
     """
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    frontier = util.Stack()
+    frontier.push((problem.getStartState(), []))
+    explored = set()
+    while not frontier.isEmpty():
+        current, actions = frontier.pop()
+        if problem.isGoalState(current):
+            return actions
+        if current not in explored:
+            explored.add(current)
+            for next, action, cost in problem.getSuccessors(current):
+                frontier.push((next, actions + [action]))
+    return []
+
 
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    frontier = util.Queue()
+    frontier.push((problem.getStartState(), []))
+    explored = set()
+    while not frontier.isEmpty():
+        current, actions = frontier.pop()
+        if problem.isGoalState(current):
+            return actions
+        if current not in explored:
+            explored.add(current)
+            for next, action, cost in problem.getSuccessors(current):
+                frontier.push((next, actions + [action]))
+    return []
+
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    frontier = util.PriorityQueue()
+    frontier.push((problem.getStartState(), []), 0)
+    explored = set()
+    while not frontier.isEmpty():
+        current, actions = frontier.pop()
+        if problem.isGoalState(current):
+            return actions
+        if current not in explored:
+            explored.add(current)
+            for next, action, cost in problem.getSuccessors(current):
+                frontier.push((next, actions + [action]),
+                              problem.getCostOfActions(actions
+                                                       + [action]))
+    return []
+
 
 def nullHeuristic(state, problem=None):
     """
-    A heuristic function estimates the cost from the current state to the nearest
-    goal in the provided SearchProblem.  This heuristic is trivial.
+    A heuristic function estimates the cost from the current state to the
+    nearest goal in the provided SearchProblem.  This heuristic is trivial.
     """
     return 0
 
+
 def aStarSearch(problem, heuristic=nullHeuristic):
-    """Search the node that has the lowest combined cost and heuristic first."""
+    """Search the node that has the lowest combined cost and heuristic first"""
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    frontier = util.PriorityQueue()
+    frontier.push((problem.getStartState(), []), 0)
+    explored = set()
+    while not frontier.isEmpty():
+        current, actions = frontier.pop()
+        if problem.isGoalState(current):
+            return actions
+        if current not in explored:
+            explored.add(current)
+            for next, action, cost in problem.getSuccessors(current):
+                frontier.push((next, actions + [action]),
+                              problem.getCostOfActions(actions + [action])
+                              + heuristic(next, problem))
+    return []
 
 
 # Abbreviations
