@@ -73,6 +73,8 @@ def tinyMazeSearch(problem):
     return  [s, s, w, s, w, w, s, w]
 
 def depthFirstSearch(problem):
+    from game import Directions
+    from util import Queue, Stack
     """
     Search the deepest nodes in the search tree first.
 
@@ -87,17 +89,135 @@ def depthFirstSearch(problem):
     print "Start's successors:", problem.getSuccessors(problem.getStartState())
     """
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    u = Directions.NORTH
+    d = Directions.SOUTH
+    l = Directions.WEST
+    r = Directions.EAST
+    
+    # Inicialización del nodo inicial
+    start = problem.getStartState()
+
+    # Si el nodo inicial es la meta, se retorna una lista vacía de movimientos
+    if problem.isGoalState(start):
+        return []
+
+    # Inicialización de la frontera como una pila (LIFO), esto nos permitirá explorar el último nodo insertado
+    # Esto nos ayudará a explorar siempre el nodo más profundo, es decir el último insertado
+    frontier = Stack()
+    
+    # Se inserta el nodo inicial a la frontera con su camino vacío
+    frontier.push((start, []))
+
+    # Conjunto para almacenar los nodos alcanzados, set debido a que no se permitirán nodos repetidos
+    reached = set()
+
+    # Mientras la frontera no esté vacía, es decir, mientras queden nodos por explorar
+    while not frontier.isEmpty():
+        
+        # Se obtiene el nodo y el camino que se ha recorrido hasta el momento
+        node, path = frontier.pop()
+
+        # Si el nodo es la meta, se retorna el camino recorrido hasta el momento
+        if problem.isGoalState(node):
+            return path
+        
+        # Si el nodo no ha sido alcanzado, se agrega al conjunto de nodos alcanzados
+        if node not in reached:
+            reached.add(node)
+
+            # Por cada nodo adyacente al nodo actual, obteniendo los datos de su tupla...
+            for child, direction, _ in problem.getSuccessors(node):
+                
+                # Si este no ha sido alcanzado aún, entonces se evaluará haciéndole push a la frontera e incluyendo el camino recorrido hasta el momento hacia ese nodo
+                if child not in reached:
+                    newPath = path + [direction]
+                    frontier.push((child, newPath))
+
+    return []
 
 def breadthFirstSearch(problem):
+    from game import Directions
+    from util import Queue
     """Search the shallowest nodes in the search tree first."""
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    u = Directions.NORTH
+    d = Directions.SOUTH
+    l = Directions.WEST
+    r = Directions.EAST
+
+    # Inicialización del nodo inicial
+    start = problem.getStartState()
+
+    # Si el nodo inicial es la meta, se retorna una lista vacía de movimientos
+    if problem.isGoalState(start):
+        return []
+
+    # Inicialización de la frontera como una cola (FIFO), esto nos permitirá explorar el primer nodo insertado de todos
+    # Esto nos ayudará a explorar siempre el nodo más superficial, es decir se recorrerán los nodos por nivel de profundidad
+    frontier = Queue()
+    
+    # Se inserta el nodo inicial a la frontera con su camino vacío
+    frontier.push((start, []))
+
+    # Conjunto para almacenar los nodos alcanzados, set debido a que no se permitirán nodos repetidos
+    reached = set()
+
+    # Mientras la frontera no esté vacía, es decir, mientras queden nodos por explorar
+    while not frontier.isEmpty():
+        
+        # Se obtiene el nodo y el camino que se ha recorrido hasta el momento
+        node, path = frontier.pop()
+
+        # Si el nodo es la meta, se retorna el camino recorrido hasta el momento
+        if problem.isGoalState(node):
+            return path
+
+        # Si el nodo no ha sido alcanzado, se agrega al conjunto de nodos alcanzados
+        if node not in reached:
+            reached.add(node)
+
+            # Por cada nodo adyacente al nodo actual, obteniendo los datos de su tupla...
+            for child, direction, _ in problem.getSuccessors(node):
+                
+                # Si este no ha sido alcanzado aún, entonces se evaluará haciéndole push a la frontera e incluyendo el camino recorrido hasta el momento hacia ese nodo
+                if child not in reached:
+                    newPath = path + [direction]
+                    frontier.push((child, newPath))
+
+    return []
+
 
 def uniformCostSearch(problem):
+    from util import PriorityQueue
     """Search the node of least total cost first."""
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    start = problem.getStartState()
+
+    if problem.isGoalState(start):
+        return []
+
+    frontier = PriorityQueue()
+    frontier.push((start, [], 0), 0)
+
+    reached = {}
+
+    while not frontier.isEmpty():
+        node, path, pathCost = frontier.pop()
+
+        if problem.isGoalState(node):
+            return path
+
+        if node not in reached or pathCost < reached[node]:
+            reached[node] = pathCost
+
+            for child, direction, child_cost in problem.getSuccessors(node):
+                newCost = pathCost + child_cost
+                if child not in reached or newCost < reached[child]:
+                    newPath = path + [direction]
+                    frontier.push((child, newPath, newCost), newCost)
+
+    
+    return []
 
 def nullHeuristic(state, problem=None):
     """
@@ -107,9 +227,64 @@ def nullHeuristic(state, problem=None):
     return 0
 
 def aStarSearch(problem, heuristic=nullHeuristic):
+    from game import Directions
+    from util import PriorityQueue
     """Search the node that has the lowest combined cost and heuristic first."""
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    u = Directions.NORTH
+    d = Directions.SOUTH
+    l = Directions.WEST
+    r = Directions.EAST
+    
+    # Inicialización del nodo inicial
+    start = problem.getStartState()
+
+    # Si el nodo inicial es la meta, se retorna una lista vacía de movimientos
+    if problem.isGoalState(start):
+        return []
+
+    # Inicialización de la frontera como una cola de prioridad, en donde se hace pop al de menor prioridad, es decir, al de menor costo
+    # Esto nos permite una aproximación muy similar a la combinación entre BFS y DFS, ya que se recorrerán los nodos por nivel de profundidad
+    # pero se dará prioridad a los nodos con menor costo
+    frontier = PriorityQueue()
+    
+    # Se inserta el nodo inicial a la frontera con su camino vacío y un costo de 0
+    frontier.push((start, [], 0), 0)
+
+    # Diccionario para almacenar los nodos alcanzados y poder obtener su costo
+    reached = {}
+
+    # Mientras la frontera no esté vacía, es decir, mientras queden nodos por explorar
+    while not frontier.isEmpty():
+        
+        # Se obtiene el nodo y el camino que se ha recorrido hasta el momento
+        node, path, pathCost = frontier.pop()
+
+        # Si el nodo es la meta, se retorna el camino recorrido hasta el momento
+        if problem.isGoalState(node):
+            return path
+
+        # Si el nodo no ha sido alcanzado, se agrega al conjunto de nodos alcanzados
+        if node not in reached or pathCost < reached[node]:
+            
+            # Se almacena el costo del nodo
+            reached[node] = pathCost
+
+            # Por cada nodo adyacente al nodo actual, obteniendo los datos de su tupla...
+            for child, direction, child_cost in problem.getSuccessors(node):
+                
+                # Se calcula el nuevo costo del camino
+                newCost = pathCost + child_cost
+                
+                # Si este no ha sido alcanzado aún, entonces se evaluará haciéndole push a la frontera e incluyendo el camino recorrido hasta el momento hacia ese nodo
+                if child not in reached or newCost < reached[child]:
+                    
+                    # Se calcula la prioridad del nodo, que es el costo del camino más la heurística del nodo, y el nuevo camino
+                    newPath = path + [direction]
+                    priority = newCost + heuristic(child, problem)
+                    frontier.push((child, newPath, newCost), priority)
+
+    return []
 
 
 # Abbreviations
